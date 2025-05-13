@@ -6,8 +6,8 @@ from typing import List
 @dataclass
 class DataConfig:
     """Configuration for dataset loading and preparation."""
-    dataset_name: str = "Pavankalyan/syn-reasoning"
-    train_split: str = "pretrain"
+    dataset_name: str = "Pavankalyan/sorting-reasoning"
+    train_split: str = "train"
     val_split: str = "val"
     test_split: str = "test"
     # filter_train_length: int = 4 # Uncomment and use if filtering is needed (e.g., filter out 'length'=4)

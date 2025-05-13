@@ -116,6 +116,31 @@ def collate_batch_packed(batch: list) -> dict:
     y = torch.stack([item['y'] for item in batch])
     return {'x': x, 'y': y}
 
+def apply_template(dataset) -> list:
+    """
+    Applies a template to the dataset to format the text for training.
+
+    Args:
+        dataset: The dataset to process.
+
+    Returns:
+        list: A list of formatted texts.
+    """
+    # Example template application (modify as needed)
+    ques = [' '.join(map(str, q)) for q in dataset['ques']]
+    ans = [' '.join(map(str, a)) for a in dataset['ans']]
+    algos = ["bubble", "selection", "insertion", "quick", "heap", "shell", "gnome", "cycle"]
+    texts = []
+    for i in tqdm(range(len(ques))):
+        for alg in algos:
+            soln = '<|T|> '+' <|T|> '.join([' '.join(map(str, step)) for step in dataset[alg][i]])
+            texts.append("<|Q|> "+ques[i]+" <|S|> "+alg+" "+soln+" <|A|> "+ans[i]+" <|E|>")
+            if i%(len(ques)//5) == 0:
+                #show sample texts
+                logger.info(f"Sample text {i}: {texts[-1]}")
+    return texts
+
+
 def load_and_prepare_datasets(data_config, tokenizer) -> tuple: # DataConfig can be imported if type hinting `data_config: DataConfig`
     """
     Loads datasets from Hugging Face and prepares them into PackedReasoningDataset instances.
@@ -133,8 +158,11 @@ def load_and_prepare_datasets(data_config, tokenizer) -> tuple: # DataConfig can
     except Exception as e:
         raise RuntimeError(f"Failed to load dataset '{data_config.dataset_name}': {e}")
 
-    train_texts = dataset[data_config.train_split]['text']
-    val_texts = dataset[data_config.val_split]['text']
+    train_texts = apply_template(dataset[data_config.train_split])
+    val_texts = apply_template(dataset[data_config.val_split])
+
+    # train_texts = dataset[data_config.train_split]['text']
+    # val_texts = dataset[data_config.val_split]['text']
     # test_texts = dataset[data_config.test_split]['text'] # Uncomment if test set is needed
 
     # Example of applying a filter if needed (as per original code's commented line)
